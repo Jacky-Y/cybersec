@@ -1,0 +1,7 @@
+先部署war 包，让服务在服务器上运行
+
+补完日报
+
+调查weblogic与api相关的漏洞，调查restful api相关的漏洞
+
+查找其他resultful api测试方法
