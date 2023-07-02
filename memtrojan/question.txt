@@ -1,1 +1,11 @@
 will java version on the client side affect how the server behaves?
+
+weblogic jdk version 8u60 
+client jdk version 8u202 ok
+client jdk version 8u102 ok
+
+weblogic jdk version 8u202
+client jdk version 8u202 not ok
+client jdk version 8u102 ok
+
+why the low version of client jdk can influence the weblogic behavior
