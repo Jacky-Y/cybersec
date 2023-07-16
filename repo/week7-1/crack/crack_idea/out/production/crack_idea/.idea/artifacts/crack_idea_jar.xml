@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="crack_idea:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/crack_idea_jar</output-path>
+    <root id="archive" name="crack_idea.jar">
+      <element id="module-output" name="crack_idea" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/cryptoj.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/wlfullclient.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

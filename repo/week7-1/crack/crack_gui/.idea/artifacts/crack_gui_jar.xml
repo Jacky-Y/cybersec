@@ -1,0 +1,11 @@
+<component name="ArtifactManager">
+  <artifact name="crack_gui:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/crack_gui_jar</output-path>
+    <root id="root">
+      <element id="archive" name="crack_gui.jar">
+        <element id="module-output" name="crack_gui" />
+      </element>
+      <element id="library" level="project" name="bcprov-jdk15on-152" />
+    </root>
+  </artifact>
+</component>

@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="crack_idea">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/cryptoj.jar!/" />
+      <root url="jar://$PROJECT_DIR$/wlfullclient.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
